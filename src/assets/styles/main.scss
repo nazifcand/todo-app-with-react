@@ -316,6 +316,10 @@ button {
     cursor: pointer;
     transition: .35s opacity ease;
 
+    &[disabled] {
+      opacity: .25;
+    }
+
     &:hover {
       opacity: .85;
     }
@@ -412,4 +416,10 @@ button {
       }
     }
   }
+}
+
+.err-text {
+  font-size: .7rem !important;
+  margin-top: .25rem;
+  color: rgb(var(--danger))
 }

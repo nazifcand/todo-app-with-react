@@ -1,9 +1,11 @@
+import { fetchPosts, createPost } from "../../services/post.service"
 import { useLoaderData, useParams } from "react-router-dom"
-import { fetchPosts } from "../../services/post.service"
 import { fetchAlbums } from "../../services/album.service"
-import { Link } from 'react-router-dom'
 import Modal from "../../components/Modal"
+import { Link } from 'react-router-dom'
+import { useFormik } from "formik"
 import { useState } from "react"
+import * as Yup from 'yup'
 
 export const loader = async ({ params }) => {
   const [err, results] = await Promise.all([
@@ -28,9 +30,43 @@ export const loader = async ({ params }) => {
 }
 
 const UserIndex = () => {
-  const { posts, albums, } = useLoaderData()
+  let { posts, albums } = useLoaderData()
   const { userId } = useParams()
   const [createPostModal, setCreatePostModal] = useState(false)
+
+  const formik = useFormik({
+    initialValues: {
+      title: 'Example Post Name',
+      body: 'Example Post Body',
+      userId
+    },
+    validationSchema: Yup.object({
+      title: Yup.string()
+        .min(5, 'Post basligi en az 5 karakter olmali!')
+        .max(15, 'Post basligi en fazla 15 karakter olmai!')
+        .required('Post basligi zorunlu bir alandir!'),
+
+      body: Yup.string()
+        .min(25, 'post body en az 25 karakter olmali')
+        .required('Post body zorunlu bir alanadir')
+    }),
+
+    onSubmit: async values => {
+
+      const [err, createdPost] = await createPost(values)
+
+      if (err) {
+        return alert('Bir hata meydana geldi!')
+      }
+
+      // posts = [
+      //   ...posts,
+      //   createdPost
+      // ]
+      posts.push(createdPost)
+      setCreatePostModal(false)
+    }
+  }, { abortEarlt: false })
 
 
   const AlbumItem = ({ album }) => {
@@ -51,15 +87,30 @@ const UserIndex = () => {
 
   return <>
     <Modal title='Create Post' size='small' open={createPostModal} onClose={() => setCreatePostModal(false)}>
-      <form>
+      <form onSubmit={formik.handleSubmit}>
         <div className="group">
           <span>Title</span>
-          <input type="text" placeholder="Post title" />
+          <input
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            value={formik.values.title}
+            name='title'
+            type="text"
+            placeholder="Post title"
+          />
+          {formik.touched.title && formik.errors.title ? <span className="err-text">{formik.errors.title}</span> : null}
         </div>
 
         <div className="group">
           <span>Content</span>
-          <textarea rows="10" placeholder="Post content"></textarea>
+          <textarea
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            value={formik.values.body}
+            name='body'
+            rows="10"
+            placeholder="Post content"></textarea>
+          {formik.touched.body && formik.errors.body ? <span className="err-text">{formik.errors.body}</span> : null}
         </div>
 
         <div className="group">
