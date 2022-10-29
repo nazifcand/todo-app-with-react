@@ -125,9 +125,6 @@ const Post = () => {
               value={formik.values.body}
             ></textarea>
             {formik.touched.body && formik.errors.body ? <span className="err-text">{formik.errors.body}</span> : null}
-            <pre>
-              {JSON.stringify(formik, null, 4)}
-            </pre>
           </div>
 
           <div className="group">
